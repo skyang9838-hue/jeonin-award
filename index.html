@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#14183a">
+<title>전인상 고르기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#0e1a3a; --bg2:#15244c; --tile:#1d2e5c; --tile2:#26396c; --edge:#070f26;
+  --ink:#fbf6e9; --ink2:#c9cfe6; --ink3:#8590b8;
+  --gold:#e8c26a; --gold-d:#b48a2e;
+  --c1:#f4b6c2; --c2:#a9d6ff; --c3:#9fe0b0;
+  --px:"Gowun Batang",serif;
+  --step:0px;
+}
+/* 졸업 테마: 계단 모서리 대신 둥근 모서리 */
+.px{clip-path:none!important;border-radius:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  -webkit-font-smoothing:antialiased;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overflow:hidden;touch-action:manipulation}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(1200px 600px at 50% -10%,rgba(232,194,106,.16),transparent 60%),
+    radial-gradient(rgba(232,194,106,.18) 1px,transparent 1.5px);
+  background-size:auto,34px 34px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+[hidden]{display:none!important}
+.px{clip-path:polygon(0 var(--step),var(--step) var(--step),var(--step) 0,calc(100% - var(--step)) 0,calc(100% - var(--step)) var(--step),100% var(--step),100% calc(100% - var(--step)),calc(100% - var(--step)) calc(100% - var(--step)),calc(100% - var(--step)) 100%,var(--step) 100%,var(--step) calc(100% - var(--step)),0 calc(100% - var(--step)))}
+.screen{position:fixed;inset:0;display:none;padding:max(18px,env(safe-area-inset-top)) clamp(16px,2.4vw,32px) max(16px,env(safe-area-inset-bottom))}
+.screen.on{display:flex}
+
+/* ---------- 1. 번호 판 ---------- */
+#home{align-items:center;justify-content:center;gap:clamp(24px,5vw,72px)}
+.hero{max-width:440px}
+.kicker{font-family:var(--px);font-weight:700;font-size:19px;color:var(--gold);letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+.kicker svg{width:20px;height:20px}
+.hero h1{font-family:var(--px);font-weight:700;font-size:clamp(44px,5.8vw,72px);line-height:1.12;margin:14px 0 18px;text-shadow:0 4px 0 var(--edge)}
+.hero h1 em{font-style:normal;color:var(--gold)}
+.hero p{margin:0;font-size:clamp(20px,2vw,26px);line-height:1.6;color:var(--ink2)}
+.hero p b{color:var(--ink)}
+.meter{margin-top:28px}
+.meter .lab{font-family:var(--px);font-weight:700;font-size:18px;color:var(--ink3);display:flex;justify-content:space-between;margin-bottom:8px}
+.meter .lab b{color:var(--ink);font-weight:400}
+.cells{display:grid;grid-template-columns:repeat(var(--n,23),1fr);gap:3px;height:16px}
+.cells i{background:var(--tile)}
+.cells i.on{background:var(--gold)}
+#nums{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(8px,1.1vw,14px);width:min(560px,92vw)}
+.num{--step:7px;aspect-ratio:1/1;background:var(--tile);position:relative;
+  font-family:var(--px);font-weight:700;font-size:clamp(30px,3.6vw,44px);
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.28),inset 0 4px 0 rgba(255,255,255,.07);transition:transform .08s}
+.num:active{transform:translateY(3px)}
+.num.done{background:var(--gold);color:#14213f;box-shadow:inset 0 -6px 0 var(--gold-d)}
+.num.done .flag{position:absolute;top:9px;right:9px;width:18px;height:18px;color:#14213f}
+.num:not(.done) .flag{display:none}
+#hold{position:fixed;right:0;bottom:0;width:120px;height:80px;display:flex;align-items:flex-end;justify-content:flex-end;
+  padding:0 16px 14px 0;font-family:var(--px);font-weight:700;font-size:16px;color:#3d4380}
+#hold .ring{width:22px;height:22px;margin-right:8px;opacity:0;transition:opacity .15s}
+#hold.holding .ring{opacity:1}
+
+/* ---------- 2. 상 고르기 ---------- */
+#pick{flex-direction:column;gap:clamp(10px,1.6vh,16px)}
+.pickhead{display:flex;align-items:center;gap:clamp(10px,1.4vw,18px)}
+.pickhead > *{flex:none}
+.who{--step:5px;background:var(--gold);color:#2a2000;font-family:var(--px);font-weight:700;font-size:clamp(28px,3vw,38px);
+  padding:10px 20px;box-shadow:inset 0 -5px 0 var(--gold-d)}
+.ask{flex:1 1 auto!important;min-width:0;font-size:clamp(21px,2.2vw,29px);font-weight:700;line-height:1.3}
+.ask small{display:block;font-size:clamp(16px,1.5vw,19px);font-weight:500;color:var(--ink3);margin-top:3px}
+.go{--step:6px;height:60px;padding:0 28px;background:var(--gold);color:#2a2000;font-family:var(--px);font-weight:700;font-size:24px;
+  box-shadow:inset 0 -5px 0 var(--gold-d)}
+.go:disabled{background:#2a3068;color:#5a609e;box-shadow:inset 0 -5px 0 rgba(0,0,0,.25)}
+.go:not(:disabled){animation:nudge 1.4s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.back{height:60px;padding:0 16px;color:var(--ink3);font-family:var(--px);font-weight:700;font-size:19px}
+
+#board{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.4vw,18px)}
+.col{display:grid;grid-template-rows:auto repeat(7,minmax(0,1fr));gap:clamp(5px,.8vh,9px);min-height:0}
+.colh{font-family:var(--px);font-weight:700;font-size:clamp(17px,1.7vw,21px);color:var(--cc);display:flex;align-items:center;gap:8px;padding:2px 2px 4px}
+.colh::before{content:"";width:12px;height:12px;background:var(--cc);flex:none;box-shadow:2px 2px 0 var(--edge)}
+.aw{--step:5px;position:relative;background:var(--tile);text-align:left;padding:0 48px 0 18px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-height:0;
+  box-shadow:inset 0 -5px 0 rgba(0,0,0,.28),inset 6px 0 0 var(--cc);transition:transform .08s,background .12s}
+.aw:active{transform:translateY(2px)}
+.aw .nm{font-weight:800;font-size:clamp(19px,2.1vw,28px);line-height:1.15}
+.aw .ds{font-size:clamp(13px,1.25vw,17px);line-height:1.3;color:var(--ink2);word-break:keep-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.aw .badge{position:absolute;top:50%;right:12px;transform:translateY(-50%);width:30px;height:30px;display:none;align-items:center;justify-content:center;
+  background:#1a1530;color:var(--cc);font-family:var(--px);font-weight:700;font-size:17px}
+.aw.sel{background:var(--cc);color:#1a1530;box-shadow:inset 0 -5px 0 rgba(0,0,0,.25),0 0 0 3px var(--bg),0 0 0 5px var(--cc)}
+.aw.sel .ds{color:rgba(26,21,48,.75)}
+.aw.sel .badge{display:flex}
+
+/* ---------- 3. 공개 ---------- */
+#reveal{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:clamp(18px,3vh,30px)}
+#reveal h2{font-family:var(--px);font-weight:700;font-size:clamp(30px,3.8vw,48px);margin:0;text-shadow:0 4px 0 var(--edge)}
+#reveal h2 em{font-style:normal;color:var(--gold)}
+/* 상장 카드: 크림 종이 + 금색 이중 테두리 */
+.card{width:clamp(280px,32vw,400px);min-height:clamp(320px,44vh,440px);background:#fbf6e9;color:#14213f;border-radius:10px!important;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px 26px;position:relative;
+  box-shadow:inset 0 0 0 6px #fbf6e9,inset 0 0 0 8px var(--gold),inset 0 0 0 12px #fbf6e9,inset 0 0 0 13px var(--gold-d),0 18px 50px rgba(0,0,0,.45);
+  animation:pop .5s cubic-bezier(.3,1.4,.5,1)}
+@keyframes pop{0%{transform:translateY(20px) scale(.96);opacity:0}100%{transform:none;opacity:1}}
+.card .t{font-family:var(--px);font-weight:700;font-size:18px;color:var(--gold-d);letter-spacing:.06em}
+.card .t::before,.card .t::after{content:"—";margin:0 8px;opacity:.6}
+.card .n{font-family:var(--px);font-weight:700;font-size:clamp(42px,4.8vw,60px);line-height:1.1;letter-spacing:.04em}
+.card .d{font-size:clamp(17px,1.7vw,21px);line-height:1.5;font-weight:500;word-break:keep-all;color:#3a4566}
+.card svg{width:54px;height:54px;color:var(--cc);filter:drop-shadow(0 2px 0 rgba(0,0,0,.15))}
+.rnote{font-size:clamp(19px,2vw,25px);color:var(--ink2);min-height:1.5em}
+.next{--step:6px;height:68px;padding:0 38px;background:var(--gold);color:#2a2000;font-family:var(--px);font-weight:700;font-size:25px;
+  box-shadow:inset 0 -5px 0 var(--gold-d)}
+.next:disabled{opacity:0}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;width:10px;height:10px;top:-12px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(var(--r))}}
+
+/* ---------- 4. 선생님 ---------- */
+#teacher{flex-direction:column;overflow:auto;gap:14px;-webkit-user-select:text;user-select:text}
+.thead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.thead h2{font-family:var(--px);font-weight:700;font-size:32px;margin:0;flex:1}
+.tb{--step:5px;height:52px;padding:0 18px;background:var(--tile);font-family:var(--px);font-weight:700;font-size:18px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.28)}
+.tb.gold{background:var(--gold);color:#2a2000;box-shadow:inset 0 -4px 0 var(--gold-d)}
+.tb.warn{background:#5a2238;color:#ffc2d4}
+.tgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.tgrid{grid-template-columns:1fr}}
+.panel{--step:8px;background:var(--bg2);padding:18px 20px}
+.panel h3{font-family:var(--px);font-size:21px;margin:0 0 12px;color:var(--gold);font-weight:400;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.panel h3 span{color:var(--ink2)}
+.big{font-family:var(--px);font-weight:700;font-size:48px}
+.big small{font-size:22px;color:var(--ink3)}
+.miss{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.miss i{font-style:normal;font-family:var(--px);font-weight:700;font-size:19px;background:var(--tile);padding:7px 12px}
+.cnt{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cnt h4{grid-column:1/-1;margin:8px 0 2px;font-family:var(--px);font-weight:400;font-size:17px;color:var(--cc)}
+.pr{display:flex;align-items:center;gap:8px;background:var(--tile);padding:10px 12px;box-shadow:inset 4px 0 0 var(--cc)}
+.pr .nm{flex:1;font-weight:700;font-size:19px}
+.pr .ct{font-family:var(--px);font-weight:700;font-size:24px;color:var(--gold)}
+.pr.zero{opacity:.35}
+.pr.zero .ct{color:var(--ink3)}
+table{width:100%;border-collapse:collapse;font-size:19px}
+td{padding:9px 6px;border-bottom:1px solid #2a2f66;vertical-align:middle}
+td:first-child{font-family:var(--px);font-weight:700;width:64px;color:var(--ink2)}
+.tag{display:inline-block;padding:4px 10px;background:var(--cc);color:#1a1530;font-weight:800;font-size:17px}
+.setrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.setrow label{font-size:19px;color:var(--ink2);display:flex;align-items:center;gap:8px}
+.setrow input{font:inherit;font-family:var(--px);font-weight:700;font-size:21px;width:84px;padding:8px 10px;background:var(--tile);color:var(--ink);border:0}
+.setrow input.wide{width:160px}
+.note{font-size:17px;color:var(--ink3);margin-top:10px;line-height:1.5}
+.ok{color:var(--c3)}
+
+@media (orientation:portrait){
+  #home{flex-direction:column;justify-content:center}
+  .hero{text-align:center;max-width:none}
+  .kicker{justify-content:center}
+  #board{grid-template-columns:1fr;overflow:auto}
+  .col{grid-template-rows:auto;}
+  .aw{min-height:84px}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="flag" viewBox="0 0 8 8" shape-rendering="crispEdges">
+    <rect x="1" y="0" width="1" height="8" fill="currentColor"/>
+    <rect x="2" y="0" width="4" height="1" fill="currentColor"/><rect x="2" y="1" width="5" height="1" fill="currentColor"/>
+    <rect x="2" y="2" width="5" height="1" fill="currentColor"/><rect x="2" y="3" width="4" height="1" fill="currentColor"/>
+  </symbol>
+  <!-- 학사모 -->
+  <symbol id="medal" viewBox="0 0 24 24">
+    <path d="M12 3 1 8.5 12 14l9-4.5V16h2V8.5z" fill="currentColor"/>
+    <path d="M5.5 11.6v4.2C5.5 17.6 8.4 19 12 19s6.5-1.4 6.5-3.2v-4.2L12 15z" fill="currentColor" opacity=".7"/>
+  </symbol>
+</svg>
+
+<!-- 1. 번호 판 -->
+<section class="screen on" id="home">
+  <div class="hero">
+    <div class="kicker"><svg><use href="#medal"/></svg>2026 졸업</div>
+    <h1>나의<br><em>전인상</em></h1>
+    <p>내 번호를 누르고<br>나에게 어울리는 <b>상 1개</b>를 고르세요.</p>
+    <div class="meter">
+      <div class="lab"><span>고른 친구</span><span><b id="doneN">0</b> / <span id="totN">23</span></span></div>
+      <div class="cells" id="cells"></div>
+    </div>
+  </div>
+  <div id="nums"></div>
+  <button id="hold" aria-label="선생님 화면 (1초 누르기)">
+    <svg class="ring" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="none" stroke="#3d4380" stroke-width="3"/>
+      <circle id="ringFill" cx="11" cy="11" r="9" fill="none" stroke="#ffd23f" stroke-width="3" stroke-dasharray="56.5" stroke-dashoffset="56.5" transform="rotate(-90 11 11)"/></svg>
+    선생님
+  </button>
+</section>
+
+<!-- 2. 상 고르기 -->
+<section class="screen" id="pick">
+  <div class="pickhead">
+    <div class="who px" id="who">7번</div>
+    <div class="ask">나에게 어울리는 상 1개를 고르세요<small>6학년 동안의 내 모습을 떠올려 보세요 · 다른 칸을 누르면 바뀌어요</small></div>
+    <button class="back" id="back">취소</button>
+    <button class="go px" id="done" disabled>완료 ▶</button>
+  </div>
+  <div id="board"></div>
+</section>
+
+<!-- 3. 공개 -->
+<section class="screen" id="reveal">
+  <h2 id="rTitle"></h2>
+  <div id="cardBox"></div>
+  <div class="rnote" id="rNote"></div>
+  <button class="next px" id="next" disabled>다음 친구에게 ▶</button>
+</section>
+
+<!-- 4. 선생님 -->
+<section class="screen" id="teacher">
+  <div class="thead">
+    <h2>선생님 화면</h2>
+    <button class="tb gold px" id="toKids">아이 화면으로</button>
+  </div>
+  <div class="tgrid">
+    <div>
+      <div class="panel px">
+        <h3>고른 친구</h3>
+        <div class="big" id="tDone"></div>
+        <div class="miss" id="tMiss"></div>
+      </div>
+      <div class="panel px" style="margin-top:14px">
+        <h3>상별 인원 <span id="tTotal"></span></h3>
+        <div class="cnt" id="tCnt"></div>
+        <div class="setrow" style="margin:14px 0 0"><button class="tb px" id="copyCnt">상별 인원 복사</button><span class="note" id="cntMsg" style="margin:0"></span></div>
+      </div>
+    </div>
+    <div>
+      <div class="panel px">
+        <h3>번호별 상</h3>
+        <table id="tTable"></table>
+        <div class="setrow" style="margin:14px 0 0"><button class="tb px" id="copyTbl">번호별 표 복사</button><span class="note" id="tblMsg" style="margin:0"></span></div>
+      </div>
+      <div class="panel px" style="margin-top:14px">
+        <h3>설정</h3>
+        <div class="setrow">
+          <label>마지막 번호 <input type="number" id="setStu" min="1" max="40" inputmode="numeric"></label>
+          <label>빠진 번호 <input class="wide" id="setSkip" placeholder="예: 7" inputmode="numeric"></label>
+        </div>
+        <div class="setrow">
+          <button class="tb px" id="saveSet">저장</button>
+          <button class="tb warn px" id="wipe">전부 지우기</button>
+        </div>
+        <div class="note">빠진 번호(전출 등)는 쉼표로 적어요. 친구가 번호를 다시 누르면 상을 고칠 수 있어요. 표는 이 태블릿에만 저장되고, 이름은 받지 않아요.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* 전인상 13개: 「2026학년도 졸업사정회 회의 자료」 2쪽 표 그대로 */
+const CATS = [
+  { name:"인성 부문", c:"var(--c1)", items:[
+    ["예절상","예절 바르고 인사를 잘하며 타의 모범이 되는 학생"],
+    ["우정상","학우돕기 등에 앞장서서 급우들과 다정히 생활하는 학생"],
+    ["효행상","조부모님, 부모님을 잘 도와드리고 공경심이 바른 학생"],
+    ["질서상","마음이 바르고 예절을 잘 지키며, 공중도덕을 잘 지켜 도덕심이 높은 학생"],
+    ["성실상","생활 주변을 깨끗이 하고 안정된 정서로 학교생활을 하는 학생"],
+    ["봉사상","봉사활동을 적극적으로 참여하는 학생"],
+    ["선행상","어려운 친구와 이웃을 돕는 학생"] ] },
+  { name:"꿈·끼·재능 부문", c:"var(--c2)", items:[
+    ["정보기능상","컴퓨터 기능이 우수하고 인터넷 학습에 열심인 학생"],
+    ["운동기능상","운동 기능이 우수한 학생"],
+    ["문예상","글짓기를 잘하는 학생"],
+    ["창의상","발명 및 창의력이 우수한 학생"],
+    ["그리기상","그리기 소질과 재능이 우수한 학생"],
+    ["음악상","노래, 악기 연주를 잘하는 학생"] ] },
+];
+const AW = {}; CATS.forEach(k => k.items.forEach(([n,d]) => AW[n] = { n, d, c:k.c, cat:k.name }));
+
+const KEY = "jeonin-award-v1";
+let mem = null;
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 1) return s; }catch(e){}
+  return mem || { v:1, last:24, skip:[7], picks:{} };   // picks[번호] = 상 이름
+}
+function save(){ mem = S; try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+let S = load();
+
+const $ = id => document.getElementById(id);
+function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); window.scrollTo(0,0); }
+const flagSvg = '<svg class="flag"><use href="#flag"/></svg>';
+const roster = () => { const a = []; for (let i = 1; i <= S.last; i++) if (!S.skip.includes(i)) a.push(i); return a; };
+const done = n => !!S.picks[n];
+
+/* ---------- 번호 판 ---------- */
+function renderHome(){
+  const list = roster();
+  const nums = $("nums"); nums.innerHTML = "";
+  list.forEach(i => {
+    const b = document.createElement("button");
+    b.className = "num px" + (done(i) ? " done" : "");
+    b.innerHTML = i + flagSvg;
+    b.onclick = () => openPick(i);
+    nums.appendChild(b);
+  });
+  const d = list.filter(done).length;
+  $("doneN").textContent = d; $("totN").textContent = list.length;
+  const cells = $("cells"); cells.style.setProperty("--n", list.length);
+  cells.innerHTML = list.map(i => `<i class="${done(i) ? "on" : ""}"></i>`).join("");
+  show("home");
+}
+
+/* ---------- 상 고르기 ---------- */
+let who = null, sel = null;
+function openPick(n){
+  $("confetti").innerHTML = "";
+  who = n; sel = S.picks[n] || null;
+  $("who").textContent = `${n}번`;
+  const board = $("board"); board.innerHTML = "";
+  CATS.forEach(k => {
+    const col = document.createElement("div"); col.className = "col"; col.style.setProperty("--cc", k.c);
+    col.innerHTML = `<div class="colh">${k.name}</div>`;
+    k.items.forEach(([nm, ds]) => {
+      const b = document.createElement("button");
+      b.className = "aw px"; b.dataset.n = nm;
+      b.innerHTML = `<span class="nm">${nm}</span><span class="ds">${ds}</span><span class="badge">✓</span>`;
+      b.onclick = () => { sel = (sel === nm ? null : nm); paint(); };
+      col.appendChild(b);
+    });
+    board.appendChild(col);
+  });
+  paint(); show("pick");
+}
+function paint(){
+  document.querySelectorAll("#board .aw").forEach(b => b.classList.toggle("sel", b.dataset.n === sel));
+  $("done").disabled = !sel;
+}
+$("back").onclick = renderHome;
+$("done").onclick = () => {
+  const edited = done(who);
+  S.picks[who] = sel; save();
+  const A = AW[sel];
+  $("rTitle").innerHTML = `${who}번의 <em>전인상</em>`;
+  $("cardBox").innerHTML = `<div class="card px" style="--cc:${A.c}"><svg><use href="#medal"/></svg><div class="t">${A.cat}</div><div class="n">${A.n}</div><div class="d">${A.d}</div></div>`;
+  $("rNote").textContent = edited ? "고른 상을 바꿨어요." : "멋진 졸업을 축하해요!";
+  $("next").onclick = renderHome; $("next").disabled = true;
+  show("reveal");
+  if (!edited) confetti();
+  setTimeout(() => $("next").disabled = false, 700);
+};
+
+function confetti(){
+  const box = $("confetti"); box.innerHTML = "";
+  const cols = ["#e8c26a","#fbf6e9","#f4b6c2","#a9d6ff","#ffffff","#d9a84a"];
+  for (let i = 0; i < 70; i++){
+    const e = document.createElement("i");
+    e.style.left = Math.random() * 100 + "vw";
+    e.style.background = cols[i % cols.length];
+    e.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+    e.style.animationDuration = (1.6 + Math.random() * 1.6) + "s";
+    e.style.animationDelay = (Math.random() * .4) + "s";
+    const s = 6 + Math.round(Math.random() * 3) * 3; e.style.width = e.style.height = s + "px";
+    box.appendChild(e);
+  }
+  setTimeout(() => box.innerHTML = "", 3800);
+}
+
+/* ---------- 선생님 화면: 오른쪽 아래 1초 누르기 ---------- */
+let holdStart = 0, raf = null;
+const hold = $("hold"), ring = $("ringFill");
+function holdTick(){
+  const t = Math.min(1, (performance.now() - holdStart) / 1000);
+  ring.setAttribute("stroke-dashoffset", 56.5 * (1 - t));
+  if (t >= 1){ endHold(); openTeacher(); return; }
+  raf = requestAnimationFrame(holdTick);
+}
+function endHold(){ cancelAnimationFrame(raf); hold.classList.remove("holding"); ring.setAttribute("stroke-dashoffset", 56.5); }
+hold.addEventListener("pointerdown", e => { e.preventDefault(); holdStart = performance.now(); hold.classList.add("holding"); raf = requestAnimationFrame(holdTick); });
+["pointerup","pointerleave","pointercancel"].forEach(ev => hold.addEventListener(ev, endHold));
+document.addEventListener("contextmenu", e => { if (!$("teacher").classList.contains("on")) e.preventDefault(); });
+
+function counts(){
+  const c = {}; Object.keys(AW).forEach(n => c[n] = 0);
+  roster().forEach(i => { if (S.picks[i] && c[S.picks[i]] !== undefined) c[S.picks[i]]++; });
+  return c;
+}
+function openTeacher(){
+  const list = roster(), got = list.filter(done), miss = list.filter(i => !done(i));
+  $("tDone").innerHTML = `${got.length}<small> / ${list.length}명</small>`;
+  $("tMiss").innerHTML = miss.length ? miss.map(n => `<i>${n}</i>`).join("") : `<span class="ok">모두 골랐어요!</span>`;
+
+  const c = counts();
+  $("tTotal").textContent = `합계 ${got.length}명`;
+  $("tCnt").innerHTML = CATS.map(k => {
+    const sum = k.items.reduce((a,[n]) => a + c[n], 0);
+    return `<h4 style="--cc:${k.c}">${k.name} · ${sum}명</h4>` + k.items.map(([n]) =>
+      `<div class="pr${c[n] ? "" : " zero"}" style="--cc:${k.c}"><span class="nm">${n}</span><span class="ct">${c[n]}</span></div>`).join("");
+  }).join("");
+
+  $("tTable").innerHTML = list.map(i => {
+    const a = S.picks[i];
+    return `<tr><td>${i}번</td><td>${a ? `<span class="tag" style="--cc:${AW[a].c}">${a}</span>` : `<span style="color:var(--ink3)">아직</span>`}</td></tr>`;
+  }).join("");
+
+  $("setStu").value = S.last; $("setSkip").value = S.skip.join(", ");
+  wipeArmed = false; $("wipe").textContent = "전부 지우기";
+  $("cntMsg").textContent = ""; $("tblMsg").textContent = "";
+  show("teacher");
+}
+async function copy(text, msgId){
+  let ok = false;
+  try{ await navigator.clipboard.writeText(text); ok = true; }catch(e){
+    const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select();
+    try{ ok = document.execCommand("copy"); }catch(_){} t.remove();
+  }
+  $(msgId).textContent = ok ? "복사했어요" : "복사가 안 돼요";
+}
+$("copyTbl").onclick = () => copy(roster().map(i => `${i}\t${S.picks[i] || ""}`).join("\n"), "tblMsg");
+$("copyCnt").onclick = () => { const c = counts(); copy(Object.keys(AW).map(n => `${n}\t${c[n]}`).join("\n"), "cntMsg"); };
+$("toKids").onclick = renderHome;
+$("saveSet").onclick = () => {
+  S.last = Math.max(1, Math.min(40, +$("setStu").value || S.last));
+  S.skip = $("setSkip").value.split(/[^0-9]+/).map(Number).filter(n => n >= 1 && n <= S.last);
+  save(); openTeacher();
+};
+let wipeArmed = false;
+$("wipe").onclick = () => {
+  if (!wipeArmed){ wipeArmed = true; $("wipe").textContent = "정말요? 한 번 더"; return; }
+  S.picks = {}; save(); openTeacher();
+};
+
+renderHome();
+</script>
+</body>
+</html>
